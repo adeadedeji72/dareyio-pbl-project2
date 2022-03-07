@@ -116,12 +116,90 @@ server {
 ```
 Here is what the code above mean
 
+
+##### *listen* — Defines what port Nginx will listen on. In this case, it will listen on port 80, the default port for HTTP.
+
+##### *root* — Defines the document root where the files served by this website are stored.
+
+##### *index* — Defines in which order Nginx will prioritize index files for this website. It is a common practice to list index.html files with a higher precedence than index.php files to allow for quickly setting up a maintenance landing page in PHP applications. You can adjust these settings to better suit your application needs.
+
+##### *server_name* — Defines which domain names and/or IP addresses this server block should respond for. Point this directive to your server’s domain name or public IP address.
+
+##### *location /* — The first location block includes a try_files directive, which checks for the existence of files or directories matching a URI request. If Nginx cannot find the appropriate resource, it will return a 404 error.
+
+##### *location ~ \.php$* — This location block handles the actual PHP processing by pointing Nginx to the fastcgi-php.conf configuration file and the php7.4-fpm.sock file, which declares what socket is associated with php-fpm.
+
+##### *location ~ /\.ht* — The last location block deals with .htaccess files, which Nginx does not process. By adding the deny all directive, if any .htaccess files happen to find their way into the document root ,they will not be served to visitors. #####
+
+
+
+
+Save the file, activate your configuration by linking to the config file from Nginx’s sites-enabled directory:
 ```
-*listen* — Defines what port Nginx will listen on. In this case, it will listen on port 80, the default port for HTTP.
-*root* — Defines the document root where the files served by this website are stored.
-*index* — Defines in which order Nginx will prioritize index files for this website. It is a common practice to list index.html files with a higher precedence than index.php files to allow for quickly setting up a maintenance landing page in PHP applications. You can adjust these settings to better suit your application needs.
-*server_name* — Defines which domain names and/or IP addresses this server block should respond for. Point this directive to your server’s domain name or public IP address.
-*location /* — The first location block includes a try_files directive, which checks for the existence of files or directories matching a URI request. If Nginx cannot find the appropriate resource, it will return a 404 error.
-*location ~ \.php$* — This location block handles the actual PHP processing by pointing Nginx to the fastcgi-php.conf configuration file and the php7.4-fpm.sock file, which declares what socket is associated with php-fpm.
-*location ~ /\.ht* — The last location block deals with .htaccess files, which Nginx does not process. By adding the deny all directive, if any .htaccess files happen to find their way into the document root ,they will not be served to visitors.
+sudo ln -s /etc/nginx/sites-available/projectLEMP /etc/nginx/sites-enabled/
 ```
+
+This will tell Nginx to use the configuration next time it is reloaded. You can test your configuration for syntax errors by typing:
+```
+sudo nginx -t
+```
+You shall see following message:
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+We need to disable default Nginx host that is currently configured to listen on port 80, for this run:
+```
+sudo unlink /etc/nginx/sites-enabled/default
+```
+Reload Nginx to apply the changes:
+```
+sudo systemctl reload nginx
+```
+
+Create an index.html file in that location so that we can test that your new server block works as expected:
+```
+sudo echo 'Hello LEMP stack installation from hostname' $(curl -s http://169.254.169.254/latest/meta-data/public-hostname) 'with public IP' $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4) > /var/www/projectLEMP/index.html
+```
+
+Visit 
+
+```
+http://<Public-IP-Address>:80
+or
+http://<Public-DNS-Name>:80
+```
+To check out the new page
+
+
+### **STEP 5 – TESTING PHP WITH NGINX** ###
+
+We can test it to validate that Nginx can correctly handle *.php* files off to your PHP processor.
+
+We can do this by creating a test PHP file in your document root. Open a new file called info.php within your document root in your text editor:
+```
+sudo nano /var/www/projectLEMP/info.php
+```
+Type the following lines into the new file. This is valid PHP code that will return information about your server:
+```
+<?php
+phpinfo();
+```
+
+We can now access this page in your web browser by visiting the domain name or public IP address you’ve set up in your Nginx configuration file, followed by /info.php:
+```
+http://`server_domain_or_IP`/info.php
+```
+
+We will have the page below if everything goes well
+
+![](php-default-page.jpg)
+
+
+After checking the relevant information about your PHP server through that page, it’s best to remove the file you created as it contains sensitive information about your PHP environment and your Ubuntu server. You can use rm to remove that file:
+```
+sudo rm /var/www/your_domain/info.php
+```
+You can always regenerate this file if you need it later.
+
